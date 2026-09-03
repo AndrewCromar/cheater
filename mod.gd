@@ -2,16 +2,16 @@ extends Node
 
 var canvas_layer: CanvasLayer
 var menu_panel: PanelContainer
+var hint_label: Label
 var is_menu_visible: bool = false
-var status_label: Label
 var active_player: Node = null
 
+var bounce_box: HBoxContainer
 var bounce_slider: HSlider
 var bounce_value_label: Label
 
 func _ready() -> void:
 	_build_mod_menu()
-	call_deferred("_create_test_popup")
 
 func _process(_delta: float) -> void:
 	_update_player_reference()
@@ -37,12 +37,11 @@ func _update_player_reference() -> void:
 
 	var has_player = is_instance_valid(active_player)
 	
-	if status_label:
-		status_label.text = "Has Player: " + ("True" if has_player else "False")
+	if bounce_box:
+		bounce_box.visible = has_player
 
-	if bounce_slider:
-		bounce_slider.editable = has_player
-		if has_player and not bounce_slider.has_focus() and "bounce_force" in active_player:
+	if bounce_slider and has_player:
+		if not bounce_slider.has_focus() and "bounce_force" in active_player:
 			bounce_slider.value = active_player.bounce_force
 			bounce_value_label.text = "Bounce: " + str(snapped(active_player.bounce_force, 0.1))
 
@@ -56,44 +55,46 @@ func _build_mod_menu() -> void:
 	canvas_layer.layer = 9999
 	add_child(canvas_layer)
 
+	hint_label = Label.new()
+	hint_label.text = "Press ';' to open mod menu"
+	hint_label.position = Vector2(10, 10)
+	hint_label.add_theme_font_size_override("font_size", 12)
+	canvas_layer.add_child(hint_label)
+
 	menu_panel = PanelContainer.new()
 	menu_panel.visible = false
-	menu_panel.position = Vector2(50, 50)
-	menu_panel.custom_minimum_size = Vector2(300, 120)
+	menu_panel.position = Vector2(20, 20)
+	menu_panel.custom_minimum_size = Vector2(220, 50)
 	canvas_layer.add_child(menu_panel)
 
 	var margin = MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 12)
-	margin.add_theme_constant_override("margin_top", 12)
-	margin.add_theme_constant_override("margin_right", 12)
-	margin.add_theme_constant_override("margin_bottom", 12)
+	margin.add_theme_constant_override("margin_left", 6)
+	margin.add_theme_constant_override("margin_top", 6)
+	margin.add_theme_constant_override("margin_right", 6)
+	margin.add_theme_constant_override("margin_bottom", 6)
 	menu_panel.add_child(margin)
 
 	var container = VBoxContainer.new()
-	container.add_theme_constant_override("separation", 8)
+	container.add_theme_constant_override("separation", 4)
 	margin.add_child(container)
 
 	var title_label = Label.new()
 	title_label.text = "Mod Controls"
 	container.add_child(title_label)
 
-	status_label = Label.new()
-	status_label.text = "Has Player: False"
-	container.add_child(status_label)
-
-	var bounce_box = HBoxContainer.new()
+	bounce_box = HBoxContainer.new()
+	bounce_box.visible = false
 	container.add_child(bounce_box)
 
 	bounce_value_label = Label.new()
 	bounce_value_label.text = "Bounce: 0.0"
-	bounce_value_label.custom_minimum_size = Vector2(100, 0)
+	bounce_value_label.custom_minimum_size = Vector2(80, 0)
 	bounce_box.add_child(bounce_value_label)
 
 	bounce_slider = HSlider.new()
 	bounce_slider.min_value = 0.0
-	bounce_slider.max_value = 100.0
-	bounce_slider.step = 0.5
-	bounce_slider.editable = false
+	bounce_slider.max_value = 1000.0
+	bounce_slider.step = 1
 	bounce_slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	bounce_slider.value_changed.connect(_on_bounce_slider_changed)
 	bounce_box.add_child(bounce_slider)
@@ -101,15 +102,9 @@ func _build_mod_menu() -> void:
 func _toggle_menu() -> void:
 	is_menu_visible = !is_menu_visible
 	menu_panel.visible = is_menu_visible
-
-func _create_test_popup() -> void:
-	var popup_layer = CanvasLayer.new()
-	popup_layer.layer = 10000
-	add_child(popup_layer)
-
-	var dialog = AcceptDialog.new()
-	dialog.title = "Mod Injected!"
-	dialog.dialog_text = "Mod loaded!\nPress ';' to toggle menu."
+	hint_label.visible = !is_menu_visible
 	
-	popup_layer.add_child(dialog)
-	dialog.popup_centered(Vector2i(280, 100))
+	if is_menu_visible:
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	else:
+		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
