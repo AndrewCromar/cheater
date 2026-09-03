@@ -93,7 +93,7 @@ func _build_mod_menu() -> void:
 
 	bounce_slider = HSlider.new()
 	bounce_slider.min_value = 0.0
-	bounce_slider.max_value = 1000.0
+	bounce_slider.max_value = 200.0
 	bounce_slider.step = 1
 	bounce_slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	bounce_slider.value_changed.connect(_on_bounce_slider_changed)
