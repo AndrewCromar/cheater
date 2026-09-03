@@ -22,17 +22,21 @@ func _unhandled_input(event: InputEvent) -> void:
 			_toggle_menu()
 
 func _find_player_node(current_node: Node) -> Node:
-	if not current_node:
+	if not is_instance_valid(current_node):
 		return null
 
-	var script = current_node.get_script()
-	if script and script is Script:
-		if script.resource_path.get_file().to_lower() == "player.gd":
+	# 1. Match by attached script filename (e.g. Player.gd, player.gd)
+	var script_obj = current_node.get_script()
+	if script_obj != null and script_obj is Script:
+		var res_path = script_obj.resource_path
+		if res_path and res_path.get_file().to_lower().begins_with("player"):
 			return current_node
 
-	if current_node.name.to_lower() == "player" or current_node.get_class() == "Player":
+	# 2. Match by Node name in tree
+	if current_node.name.to_lower().contains("player"):
 		return current_node
 
+	# Recursively check children
 	for child in current_node.get_children():
 		var found = _find_player_node(child)
 		if found:
@@ -46,7 +50,7 @@ func _update_ui_display() -> void:
 
 	if is_instance_valid(reference_player):
 		var pos = reference_player.global_position if "global_position" in reference_player else reference_player.position
-		player_status_label.text = "Player: FOUND\nPosition: " + str(pos)
+		player_status_label.text = "Player: FOUND (" + reference_player.name + ")\nPosition: " + str(pos)
 		player_status_label.add_theme_color_override("font_color", Color(0.2, 1.0, 0.4))
 	else:
 		player_status_label.text = "Player: SEARCHING..."
