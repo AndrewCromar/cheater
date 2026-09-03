@@ -1,7 +1,6 @@
-Run To Install:
+Cheats for "Unnamed Pogo Game" on steam. Only supports windows atm.
 
 Windows PowerShell:
 
-```
-irm https://raw.githubusercontent.com/AndrewCromar/cheater/main/patch.ps1 | iex
-```
+```powershell
+irm [https://raw.githubusercontent.com/AndrewCromar/cheater/main/patch.ps1](https://raw.githubusercontent.com/AndrewCromar/cheater/main/patch.ps1) | iex
